@@ -3,6 +3,9 @@ FROM php:5.6-fpm
 RUN apt-get update && apt-get -y upgrade
 
 RUN apt-get install -y \
+  wget \
+  snmp \
+  zip \
   libmcrypt-dev \
   libcurl4-gnutls-dev \
   libxml2-dev \
@@ -24,6 +27,14 @@ RUN apt-get install -y \
   libpq-dev \
   libmagickwand-dev \
   libmemcached-dev
+
+RUN wget https://getcomposer.org/composer.phar && \
+  mv composer.phar /usr/bin/composer && \
+  chmod a+x /usr/bin/composer
+
+RUN composer global require "laravel/installer"
+
+ENV PATH="$PATH:/root/.composer/vendor/bin"
 
 COPY build/build-php-modules.sh /
 
