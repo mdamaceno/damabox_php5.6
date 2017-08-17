@@ -9,6 +9,7 @@ docker-php-ext-install -j$(nproc) \
   ctype \
   curl \
   dba \
+  dom \
   exif \
   fileinfo \
   gd \
