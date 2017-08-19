@@ -22,6 +22,7 @@ docker-php-ext-install -j$(nproc) \
   ldap \
   mbstring \
   mcrypt \
+  mysqli \
   opcache \
   pdo \
   pdo_firebird \
