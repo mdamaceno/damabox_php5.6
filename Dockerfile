@@ -32,14 +32,28 @@ RUN wget https://getcomposer.org/composer.phar && \
   mv composer.phar /usr/bin/composer && \
   chmod a+x /usr/bin/composer
 
-RUN composer global require "laravel/installer"
-
-ENV PATH="$PATH:/root/.composer/vendor/bin"
-
 COPY build/build-php-modules.sh /
 
 RUN chmod +x /build-php-modules.sh
 
 RUN sh /build-php-modules.sh
 
+RUN apt-get install -y git sudo
+
+RUN composer global require "laravel/installer"
+
+ENV PATH="/root/.composer/vendor/bin:${PATH}"
+
+RUN adduser --disabled-password --gecos "" damabox && adduser damabox sudo && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
 RUN apt-get -y autoclean && apt-get -y autoremove && apt-get -y clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+USER damabox
+
+RUN composer global require "laravel/installer"
+
+ENV PATH="/home/damabox/.composer/vendor/bin:${PATH}"
+
+ENV TERM=xterm
+
+WORKDIR /app
