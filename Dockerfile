@@ -28,6 +28,8 @@ RUN apt-get install -y \
   libmagickwand-dev \
   libmemcached-dev
 
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
 RUN wget https://getcomposer.org/composer.phar && \
   mv composer.phar /usr/bin/composer && \
   chmod a+x /usr/bin/composer
@@ -44,16 +46,38 @@ RUN composer global require "laravel/installer"
 
 ENV PATH="/root/.composer/vendor/bin:${PATH}"
 
+# Install Node
+ENV NVM_DIR="/usr/local/nvm"
+ENV NVM_VERSION="0.33.2"
+ENV NODE_VERSION="8.4.0"
+
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash && \
+  . $NVM_DIR/nvm.sh && \
+  nvm install $NODE_VERSION && \
+  nvm alias default $NODE_VERSION && \
+  nvm use default
+
+ENV NODE_PATH="${NVM_DIR}/v${NODE_VERSION}/lib/node_modules"
+
+# Add user damabox
 RUN adduser --disabled-password --gecos "" damabox && adduser damabox sudo && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-RUN apt-get -y autoclean && apt-get -y autoremove && apt-get -y clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Install Yarn
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && echo "deb http://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+
+RUN apt-get update && apt-get install -y yarn
 
 USER damabox
+
+RUN echo "export NVM_DIR=\"/usr/local/nvm\"" >> $HOME/.bashrc && echo "[ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"" >> $HOME/.bashrc && echo "[ -s \"$NVM_DIR/bash_completion\" ] && \. \"$NVM_DIR/bash_completion\"" >> $HOME/.bashrc
 
 RUN composer global require "laravel/installer"
 
 ENV PATH="/home/damabox/.composer/vendor/bin:${PATH}"
 
 ENV TERM=xterm
+
+# Clean up system
+RUN sudo apt-get -y autoclean && sudo apt-get -y autoremove && sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /app
