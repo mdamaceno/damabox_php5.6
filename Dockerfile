@@ -71,11 +71,15 @@ USER damabox
 
 RUN echo "export NVM_DIR=\"/usr/local/nvm\"" >> $HOME/.bashrc && echo "[ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"" >> $HOME/.bashrc && echo "[ -s \"$NVM_DIR/bash_completion\" ] && \. \"$NVM_DIR/bash_completion\"" >> $HOME/.bashrc
 
+# Install Laravel installer
 RUN composer global require "laravel/installer"
-
 ENV PATH="/home/damabox/.composer/vendor/bin:${PATH}"
 
 ENV TERM=xterm
+
+# Install phpunit
+RUN sudo wget https://phar.phpunit.de/phpunit.phar
+RUN sudo chmod a+x phpunit.phar && sudo mv phpunit.phar /usr/local/bin/phpunit && phpunit --version
 
 # Clean up system
 RUN sudo apt-get -y autoclean && sudo apt-get -y autoremove && sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
