@@ -30,15 +30,57 @@ RUN apt-get install -y \
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
+# Install Composer
 RUN wget https://getcomposer.org/composer.phar && \
   mv composer.phar /usr/bin/composer && \
   chmod a+x /usr/bin/composer
 
-COPY build/build-php-modules.sh /
+RUN ln -s /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/libldap.so \
+  && ln -s /usr/lib/x86_64-linux-gnu/liblber.so /usr/lib/liblber.so
 
-RUN chmod +x /build-php-modules.sh
+# Install PHP extensions
+RUN docker-php-ext-install -j$(nproc) \
+  bcmath \
+  calendar \
+  ctype \
+  curl \
+  dba \
+  dom \
+  exif \
+  fileinfo \
+  gd \
+  gettext \
+  hash \
+  iconv \
+  interbase \
+  intl \
+  json \
+  ldap \
+  mbstring \
+  mcrypt \
+  mysqli \
+  opcache \
+  pdo \
+  pdo_firebird \
+  pdo_mysql \
+  pdo_pgsql \
+  pdo_sqlite \
+  phar \
+  posix \
+  readline \
+  shmop \
+  simplexml \
+  snmp \
+  soap \
+  sockets \
+  tidy \
+  xml \
+  xsl \
+  zip
 
-RUN sh /build-php-modules.sh
+RUN printf "\n" | pecl install imagick-beta xdebug mongodb
+
+RUN docker-php-ext-enable imagick xdebug mongodb
 
 RUN apt-get install -y git sudo
 
@@ -48,8 +90,8 @@ ENV PATH="/root/.composer/vendor/bin:${PATH}"
 
 # Install Node
 ENV NVM_DIR="/usr/local/nvm"
-ENV NVM_VERSION="0.33.2"
-ENV NODE_VERSION="8.4.0"
+ENV NVM_VERSION="0.33.6"
+ENV NODE_VERSION="8.8.1"
 
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash && \
   . $NVM_DIR/nvm.sh && \
@@ -78,7 +120,7 @@ ENV PATH="/home/damabox/.composer/vendor/bin:${PATH}"
 ENV TERM=xterm
 
 # Install phpunit
-RUN sudo wget https://phar.phpunit.de/phpunit.phar
+RUN sudo wget https://phar.phpunit.de/phpunit-5.7.phar -O phpunit.phar
 RUN sudo chmod a+x phpunit.phar && sudo mv phpunit.phar /usr/local/bin/phpunit && phpunit --version
 
 # Clean up system
